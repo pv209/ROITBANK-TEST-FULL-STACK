@@ -8,6 +8,7 @@ export class UsersService {
   constructor(@InjectModel('Users') private readonly userModel: Model<User>) {}
 
   async create(user: User) {
+    console.log(user);
     const createdUser = new this.userModel(user);
     return await createdUser.save();
   }
@@ -27,5 +28,8 @@ export class UsersService {
 
   async remove(id: string) {
     return await this.userModel.deleteOne({ _id: id }).exec();
+  }
+  async removeAll() {
+    return this.userModel.deleteMany({}).exec();
   }
 }

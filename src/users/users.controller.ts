@@ -15,8 +15,9 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() user: User) {
-    return this.usersService.create(user);
+  create(@Body() body: User) {
+    console.log(body);
+    return this.usersService.create(body);
   }
 
   @Get()
@@ -37,5 +38,10 @@ export class UsersController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
+  }
+
+  @Delete()
+  removeAll() {
+    return this.usersService.removeAll();
   }
 }
