@@ -21,7 +21,7 @@
       </div>
 
       <Popup
-        v-if="popupTriggers.buttonTrigger"
+        v-if="triggers.buttonTrigger"
         :TogglePopup="() => TogglePopup('buttonTrigger')"
       >
         <form>
@@ -73,7 +73,7 @@
         </form>
         <div class="buttons">
           <button
-            class="btn"
+            class="btn2"
             type="button"
             @click="() => TogglePopup('buttonTrigger')"
           >
@@ -100,11 +100,27 @@
               <td>{{ index + 1 }}</td>
               <td>{{ user.name }}</td>
               <td>{{ user.age }}</td>
-              <td>{{ user.github }}</td>
+              <td>{{ user.github.login }}</td>
               <td>{{ user.address }}</td>
+              <td>
+                <img
+                  :src="trashImg"
+                  @click="() => TogglePopup('trashTrigger', user.id)"
+                />
+              </td>
             </tr>
           </tbody>
         </table>
+        <div v-if="triggers.trashTrigger" class="delete">
+          <h5>Deseja mesmo deletar o usuário?</h5>
+          <button
+            class="deleteButton1"
+            @click="() => TogglePopup('trashTrigger')"
+          >
+            Cancelar
+          </button>
+          <button class="deleteButton2" @click="handleDelete">Deletar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -136,6 +152,8 @@ export default {
       comp: '',
       users: [],
       search: '',
+      trashImg: require('/home/paulo/Projetos/pv209/riotbank-front/src/Images/trash (5).svg'),
+      deleteId: '',
     };
   },
 
@@ -143,7 +161,7 @@ export default {
     filteredUsers() {
       return this.users.filter((user) => {
         const name = user.name.toString().toLowerCase();
-        const github = user.github.toLowerCase();
+        const github = user.github.login.toLowerCase();
         const age = user.age.toString();
         const address = user.address.toString().toLowerCase();
         const searchTerm = this.search.toLowerCase();
@@ -162,52 +180,63 @@ export default {
       if (inputs !== '') return true;
       return false;
     },
-  },
-  async handleCep() {
-    const cep = this.cep.replace(/\D/g, '');
-    if (cep != '') {
-      const validaCep = /^[0-9]{8}$/;
-      if (validaCep.test(cep)) {
-        const requestAddress = await axios(
-          `http://viacep.com.br/ws/${this.cep}/json/`,
-        );
-        console.log(requestAddress.data);
-        this.state = requestAddress.data.uf;
-        this.city = requestAddress.data.localidade;
-        this.neighborhood = requestAddress.data.bairro;
-        this.street = requestAddress.data.logradouro;
+
+    async handleCep() {
+      const cep = this.cep.replace(/\D/g, '');
+      if (cep != '') {
+        const validaCep = /^[0-9]{8}$/;
+        if (validaCep.test(cep)) {
+          const requestAddress = await axios(
+            `http://viacep.com.br/ws/${this.cep}/json/`,
+          );
+          console.log(requestAddress.data);
+          this.state = requestAddress.data.uf;
+          this.city = requestAddress.data.localidade;
+          this.neighborhood = requestAddress.data.bairro;
+          this.street = requestAddress.data.logradouro;
+        }
       }
-    }
-  },
-  async handleRegister() {
-    if (
-      this.verifyInputs(this.name) &&
-      this.verifyInputs(this.age) &&
-      this.verifyInputs(this.github) &&
-      this.verifyInputs(this.cep)
-    ) {
-      const response = await axios.post('http://localhost:8080/users', {
-        name: this.name,
-        age: this.age,
-        address: `${this.street},${this.number}-${this.neighborhood}-${this.city}/${this.state}`,
-        github: this.github,
-      });
-      console.log(response.data);
-      this.data = response;
+    },
+    async handleRegister() {
+      if (
+        this.verifyInputs(this.name) &&
+        this.verifyInputs(this.age) &&
+        this.verifyInputs(this.github) &&
+        this.verifyInputs(this.cep)
+      ) {
+        const gitRequest = await axios(
+          `https://api.github.com/search/users?q=${this.github}`,
+        );
+        console.log(gitRequest.data);
+        const response = await axios.post('http://localhost:8080/users', {
+          name: this.name,
+          age: this.age,
+          address: `${this.street},${this.number}-${this.neighborhood}-${this.city}/${this.state}`,
+          github: gitRequest.data.items[0],
+        });
+        console.log(response.data);
+        this.data = response;
+        window.location.reload(true);
+      }
+    },
+    async handleDelete() {
+      await axios.delete(`http://localhost:8080/users/${this.deleteId}`);
       window.location.reload(true);
-    }
+    },
   },
 
   setup() {
-    const popupTriggers = ref({
+    const triggers = ref({
       buttonTrigger: false,
+      trashTrigger: false,
     });
-    const TogglePopup = (trigger) => {
-      popupTriggers.value[trigger] = !popupTriggers.value[trigger];
+    const TogglePopup = (trigger, id) => {
+      triggers.value[trigger] = !triggers.value[trigger];
+      if (id) this.deleteId = id;
     };
     return {
       Popup,
-      popupTriggers,
+      triggers,
       TogglePopup,
     };
   },
@@ -226,6 +255,20 @@ export default {
   border-radius: 4px;
   background-color: #e2b874;
   color: #ffff;
+  cursor: pointer;
+  margin: 20px;
+  font-family: 'Poppins';
+}
+.btn2 {
+  outline: none;
+  display: block;
+  border: 0;
+  font-size: 16px;
+  padding: 16px 25px;
+  border-radius: 4px;
+  background-color: #ffffff;
+  border: 1px solid #e2b874;
+  color: #e2b874;
   cursor: pointer;
   margin: 20px;
   font-family: 'Poppins';
@@ -335,5 +378,50 @@ select {
   align-self: flex-end;
   width: 35%;
   margin-bottom: 30px;
+}
+.delete {
+  position: fixed;
+  flex-direction: row;
+  align-items: center;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Poppins';
+}
+.deleteButton1 {
+  outline: none;
+  display: block;
+  border: 0;
+  font-size: 16px;
+  padding: 16px 25px;
+  border-radius: 4px;
+  background: #ffffff;
+  border: 1px solid #d83636;
+  border-radius: 4px;
+  font-family: 'Poppins';
+  font: #d83636;
+  cursor: pointer;
+  margin: 20px;
+}
+
+.deleteButton2 {
+  outline: none;
+  display: block;
+  border: 0;
+  font-size: 16px;
+  padding: 16px 25px;
+  border-radius: 4px;
+  background: #d83636;
+  border-radius: 4px;
+  font-family: 'Poppins';
+  font: #ffffff;
+  cursor: pointer;
+  margin: 20px;
 }
 </style>
