@@ -5,4 +5,5 @@ export class User extends Document {
   age: number;
   address: string;
   github: object;
+  addressInfo: object;
 }

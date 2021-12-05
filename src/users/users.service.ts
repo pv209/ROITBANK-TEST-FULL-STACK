@@ -7,8 +7,16 @@ import { User } from './User';
 export class UsersService {
   constructor(@InjectModel('Users') private readonly userModel: Model<User>) {}
 
+  async findByName(name: string) {
+    return this.userModel.findOne({ name }).exec();
+  }
+
   async create(user: User) {
-    console.log(user);
+    const exists = await this.findByName(user.name);
+    if (exists) {
+      return this.update(user);
+    }
+
     const createdUser = new this.userModel(user);
     return await createdUser.save();
   }
@@ -21,9 +29,9 @@ export class UsersService {
     return await this.userModel.findById(id).exec();
   }
 
-  async update(id: string, user: User) {
-    await this.userModel.updateOne({ _id: id }, user).exec();
-    return this.findOne(id);
+  async update(user: User) {
+    await this.userModel.updateOne({ name: user.name }, user).exec();
+    return this.findByName(user.name);
   }
 
   async remove(id: string) {

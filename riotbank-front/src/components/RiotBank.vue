@@ -34,7 +34,7 @@
           <label>CEP</label>
           <input
             v-model="cep"
-            @blur="handleCep"
+            @change="handleCep"
             placeholder="00.000-000"
             type="text"
           />
@@ -89,15 +89,15 @@
           <thead>
             <tr>
               <th>ID</th>
-              <th>Nome</th>
-              <th>Idade</th>
+              <th @click="handleSort('name')">Nome</th>
+              <th @click="handleSort('age')">Idade</th>
               <th>GitHub User</th>
               <th>Endereço</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(user, index) in filteredUsers" :key="user._id">
-              <td>{{ index + 1 }}</td>
+            <tr v-for="user in handleSort()" :key="user._id">
+              <td>{{ user._id }}</td>
               <td>{{ user.name }}</td>
               <td>{{ user.age }}</td>
               <td>{{ user.github.login }}</td>
@@ -105,8 +105,11 @@
               <td>
                 <img
                   :src="trashImg"
-                  @click="() => TogglePopup('trashTrigger', user.id)"
+                  @click="() => TogglePopup('trashTrigger', user._id)"
                 />
+              </td>
+              <td>
+                <img :src="updateImg" @click="() => handleUpdate(user)" />
               </td>
             </tr>
           </tbody>
@@ -128,7 +131,7 @@
 
 <script>
 import Popup from './Popup.vue';
-import { ref } from 'vue';
+
 import axios from 'axios';
 export default {
   async mounted() {
@@ -154,6 +157,8 @@ export default {
       search: '',
       trashImg: require('/home/paulo/Projetos/pv209/riotbank-front/src/Images/trash (5).svg'),
       deleteId: '',
+      updateImg: require('/home/paulo/Projetos/pv209/riotbank-front/src/Images/eye (8).svg'),
+      triggers: { buttonTrigger: false, trashTrigger: false },
     };
   },
 
@@ -179,6 +184,37 @@ export default {
     verifyInputs(inputs) {
       if (inputs !== '') return true;
       return false;
+    },
+
+    TogglePopup(trigger, id) {
+      this.triggers[trigger] = !this.triggers[trigger];
+      if (id) this.deleteId = id;
+    },
+
+    handleSort(key) {
+      if (key) {
+        console.log('entrou');
+        const arr = this.filteredUsers;
+        const sorted = arr.sort((a, b) => a[key] - b[key]);
+        console.log(sorted);
+        return sorted;
+      }
+      console.log('alo');
+      return this.filteredUsers;
+    },
+
+    handleUpdate(user) {
+      this.TogglePopup('buttonTrigger');
+      this.name = user.name;
+      this.age = user.age;
+      this.github = user.github.login;
+      this.cep = user.addressInfo.cep;
+      this.state = user.addressInfo.state;
+      this.city = user.addressInfo.city;
+      this.neighborhood = user.addressInfo.neighbor;
+      this.street = user.addressInfo.street;
+      this.number = user.addressInfo.number;
+      this.comp = user.addressInfo.comp;
     },
 
     async handleCep() {
@@ -212,6 +248,15 @@ export default {
           name: this.name,
           age: this.age,
           address: `${this.street},${this.number}-${this.neighborhood}-${this.city}/${this.state}`,
+          addressInfo: {
+            cep: this.cep,
+            street: this.street,
+            number: this.number,
+            neighbor: this.neighborhood,
+            city: this.city,
+            state: this.state,
+            comp: this.comp,
+          },
           github: gitRequest.data.items[0],
         });
         console.log(response.data);
@@ -220,25 +265,10 @@ export default {
       }
     },
     async handleDelete() {
+      console.log(this.deleteId);
       await axios.delete(`http://localhost:8080/users/${this.deleteId}`);
       window.location.reload(true);
     },
-  },
-
-  setup() {
-    const triggers = ref({
-      buttonTrigger: false,
-      trashTrigger: false,
-    });
-    const TogglePopup = (trigger, id) => {
-      triggers.value[trigger] = !triggers.value[trigger];
-      if (id) this.deleteId = id;
-    };
-    return {
-      Popup,
-      triggers,
-      TogglePopup,
-    };
   },
 };
 </script>

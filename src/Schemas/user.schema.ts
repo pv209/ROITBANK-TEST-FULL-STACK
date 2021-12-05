@@ -5,4 +5,5 @@ export const UsersSchema = new mongoose.Schema({
   age: Number,
   address: String,
   github: Object,
+  addressInfo: Object,
 });
