@@ -4,6 +4,6 @@
  <ul>
   <li> Faça o clone do Projeto </li>
   <li> No terminal rode o comando 'npm start' na pasta raiz do projeto para iniciar o backend </li>
-  <li> Abra otro terminal, acesse a pasta RIOTBANK-FRONT/ e rode o comando 'npm run serve' para iniciar o frontend </li>
+  <li> Abra outro terminal, acesse a pasta RIOTBANK-FRONT/ e rode o comando 'npm run serve' para iniciar o frontend </li>
   <li> Abra o navegador e acesse 'http://localhost:8080/ ' </li>
  </ul>
