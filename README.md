@@ -1,5 +1,5 @@
 <h1>ROITBANK TEST</h1>
-<p>Gostei muito de fazer esse teste, encontrei vários desafios como novas linguagens(Nestjs,Vue,TypeScript), fazer uma aplicação fullstack sendo que foi apenas minha terceira aplicção onde fiz tanto o banckend e frontend e também fazer o css do zero sem usar blibliotecas. Gostei muito do resultado final e estou animado para receber feedbacks. </p>
+<p>Gostei muito de fazer esse teste, encontrei vários desafios como novas linguagens(Nestjs,Vue,TypeScript), fazer uma aplicação fullstack sendo que foi apenas minha terceira aplicação onde fiz tanto o banckend e frontend e também fazer o css do zero sem usar blibliotecas. Gostei muito do resultado final e estou animado para receber feedbacks. </p>
 <h3> Como rodar a aplicação </h3>
  <ul>
   <li> Faça o clone do Projeto </li>
